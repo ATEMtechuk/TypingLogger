@@ -1,0 +1,11 @@
+# Signed builds and AMO signing state — never commit
+web-ext-artifacts/
+.amo-upload-uuid
+.web-extension-id
+
+# Dependencies / tooling
+node_modules/
+
+# OS noise
+Thumbs.db
+.DS_Store

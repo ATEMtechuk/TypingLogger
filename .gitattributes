@@ -1,0 +1,8 @@
+# Normalize line endings to LF in the repository
+* text=auto eol=lf
+
+# Binary assets
+*.png binary
+
+# Large data file — treat as text but don't diff it
+data/dict.txt -diff

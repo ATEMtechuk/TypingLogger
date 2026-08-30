@@ -1,0 +1,22 @@
+{
+  "name": "typinglogger",
+  "version": "0.1.0",
+  "description": "A privacy-first browser extension that tracks your real-world typing speed and accuracy, autocorrects as you type, and suggests words — with a local dashboard to watch your improvement.",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "lint": "web-ext lint --source-dir=. --self-hosted",
+    "start:firefox": "web-ext run --source-dir=.",
+    "build": "web-ext build --source-dir=. --overwrite-dest",
+    "sign": "web-ext sign --channel=unlisted --source-dir=."
+  },
+  "devDependencies": {
+    "web-ext": "^8.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ATEMtechuk/TypingLogger.git"
+  }
+}

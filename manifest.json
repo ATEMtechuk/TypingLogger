@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "TypingLogger",
+  "version": "0.1.0",
+  "description": "Tracks your real-world typing speed and accuracy across the web, with a dashboard to watch your improvement over time.",
+  "permissions": ["storage"],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "typinglogger@local",
+      "strict_min_version": "128.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  },
+  "background": {
+    "service_worker": "src/background.js",
+    "scripts": ["lib/browser-polyfill.min.js", "src/corrector.js", "src/background.js"]
+  },
+  "icons": {
+    "16": "assets/icon-16.png",
+    "32": "assets/icon-32.png",
+    "48": "assets/icon-48.png",
+    "128": "assets/icon-128.png"
+  },
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_title": "TypingLogger — typing speed & accuracy",
+    "default_icon": {
+      "16": "assets/icon-16.png",
+      "32": "assets/icon-32.png",
+      "48": "assets/icon-48.png",
+      "128": "assets/icon-128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["lib/browser-polyfill.min.js", "src/metrics.js", "src/content.js", "src/autocorrect.js", "src/predict.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "options_ui": {
+    "page": "src/dashboard.html",
+    "open_in_tab": true
+  }
+}

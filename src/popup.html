@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    :root {
+      --bg: #0f1116;
+      --card: #181b22;
+      --text: #e8eaed;
+      --muted: #9aa0aa;
+      --accent: #5b9dff;
+      --good: #46c98b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      width: 260px;
+      margin: 0;
+      padding: 14px;
+      font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    h1 {
+      font-size: 13px;
+      font-weight: 600;
+      margin: 0 0 2px;
+      letter-spacing: .3px;
+    }
+    .sub { font-size: 11px; color: var(--muted); margin-bottom: 12px; }
+    .row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .tile {
+      flex: 1;
+      background: var(--card);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+    .tile .num { font-size: 22px; font-weight: 700; line-height: 1.1; }
+    .tile .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
+    .accent { color: var(--accent); }
+    .good { color: var(--good); }
+    .meta { font-size: 11px; color: var(--muted); margin: 6px 0 12px; }
+    button {
+      width: 100%;
+      background: var(--accent);
+      color: #06101f;
+      border: 0;
+      border-radius: 8px;
+      padding: 9px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button.ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid #2a2e37;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>TypingLogger</h1>
+  <div class="sub">Today's typing</div>
+
+  <div class="row">
+    <div class="tile"><div class="num accent" id="wpm">–</div><div class="lbl">WPM</div></div>
+    <div class="tile"><div class="num good" id="acc">–</div><div class="lbl">Spelling acc.</div></div>
+  </div>
+  <div class="row">
+    <div class="tile"><div class="num" id="words">–</div><div class="lbl">Words</div></div>
+    <div class="tile"><div class="num" id="chars">–</div><div class="lbl">Characters</div></div>
+  </div>
+
+  <div class="meta" id="detail"></div>
+  <div class="meta" id="lifetime"></div>
+
+  <button id="open">Open dashboard</button>
+  <button class="ghost" id="reset">Reset all stats</button>
+
+  <script src="../lib/browser-polyfill.min.js"></script>
+  <script src="metrics.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
