@@ -39,6 +39,20 @@ editors (Google Docs, Notion) are not yet supported.
 
 ---
 
+## Screenshots
+
+**Word suggestions as you type** — dictionary completions (and learned next-word
+predictions after a space); press <kbd>Tab</kbd> to accept:
+
+<img src="assets/screenshot-suggestions.svg" width="460" alt="A search field reading 'how to recei' with the TypingLogger suggestion bar below showing 'received', 'receive', and 'receiving'.">
+
+**The popup** — today's speed and accuracy at a glance when you click the toolbar
+icon:
+
+<img src="assets/screenshot-popup.svg" width="260" alt="The TypingLogger popup showing 62 WPM, 96% spelling accuracy, 1,240 words, 7,830 characters, plus all-time totals and Open dashboard / Reset buttons.">
+
+---
+
 ## Install
 
 ### Firefox — try it (temporary)
