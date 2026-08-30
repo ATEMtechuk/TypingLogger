@@ -4,8 +4,6 @@ const assert = require("node:assert");
 const fs = require("node:fs");
 const path = require("node:path");
 
-// The corrector runs in the background context and loads data/dict.txt via
-// browser.runtime.getURL + fetch. Stub both so it can run under node --test.
 const dictText = fs.readFileSync(path.join(__dirname, "..", "data", "dict.txt"), "utf8");
 globalThis.chrome = { runtime: { getURL: (p) => p } };
 globalThis.fetch = async () => ({ text: async () => dictText });

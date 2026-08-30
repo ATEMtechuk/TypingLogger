@@ -1,22 +1,9 @@
-/*
- * predict.js — content-script predictive-typing UI.
- *
- * As you type, a small floating bar near the focused field shows suggestions:
- *   - while typing a word: dictionary completions of the current prefix
- *   - right after a space: your personal learned next-word predictions
- * Press Tab (or click a chip) to accept the first/chosen suggestion; Esc hides.
- *
- * Privacy: the bar lives in a CLOSED shadow root and only reacts to trusted
- * (real user) input, so a hostile page can't read the shadow DOM or synthesize
- * events to enumerate your personal next-word model. v1 handles <input> /
- * <textarea> only.
- */
 (function () {
   "use strict";
 
   var MIN_PREFIX = 2;
   var DEBOUNCE_MS = 60;
-  var TOKEN_RE = /([A-Za-z']+)$/; // same segmentation as autocorrect.js
+  var TOKEN_RE = /([A-Za-z']+)$/;
 
   function emptyCurrent() {
     return { el: null, mode: null, tokenStart: 0, token: "", suggestions: [] };
@@ -35,7 +22,6 @@
     return false;
   }
 
-  // ---- the floating bar (in a closed shadow root) ------------------------
   function ensureBar() {
     if (bar) return bar;
     host = document.createElement("div");
@@ -49,7 +35,7 @@
       "padding:4px", "box-shadow:0 4px 14px rgba(0,0,0,.35)",
       "font-family:-apple-system,Segoe UI,Roboto,sans-serif", "font-size:13px"
     ].join(";");
-    bar.addEventListener("mousedown", function (e) { e.preventDefault(); }); // keep focus
+    bar.addEventListener("mousedown", function (e) { e.preventDefault(); });
     shadow.appendChild(bar);
     document.documentElement.appendChild(host);
     return bar;
@@ -77,7 +63,7 @@
     });
 
     var hint = document.createElement("span");
-    hint.textContent = "⇥"; // ⇥
+    hint.textContent = "⇥";
     hint.style.cssText = "padding:4px 6px;color:#6b7280;";
     bar.appendChild(hint);
 
@@ -86,12 +72,11 @@
     var barW = host.offsetWidth || 120;
     var barH = host.offsetHeight || 30;
     var top = rect.bottom + 4;
-    if (top + barH > window.innerHeight) top = rect.top - barH - 4; // flip up
+    if (top + barH > window.innerHeight) top = rect.top - barH - 4;
     host.style.left = Math.max(4, Math.min(rect.left, window.innerWidth - barW - 4)) + "px";
     host.style.top = Math.max(4, top) + "px";
   }
 
-  // ---- reading the current token -----------------------------------------
   function analyze(el) {
     var caret = el.selectionStart;
     if (caret == null) return null;
@@ -127,7 +112,7 @@
     pr.then(function (list) {
       if (!Array.isArray(list) || !list.length) { hideBar(); return; }
       if (document.activeElement !== el) { hideBar(); return; }
-      // Drop a stale reply whose token no longer matches what's at the caret.
+
       var now = analyze(el);
       if (!now || now.mode !== a.mode || now.start !== a.start ||
           (a.mode === "complete" && now.token !== a.token)) { return; }
@@ -139,7 +124,6 @@
     }).catch(function () {});
   }
 
-  // ---- accepting a suggestion --------------------------------------------
   function nativeSetValue(el, value) {
     var proto = el.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
     var desc = Object.getOwnPropertyDescriptor(proto, "value");
@@ -147,7 +131,6 @@
     el.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
-  // Returns true only if it actually inserted the word.
   function accept(word) {
     var el = current.el;
     if (!el || !el.isConnected) { hideBar(); return false; }
@@ -157,8 +140,7 @@
 
     if (current.mode === "complete") {
       var end = current.tokenStart + current.token.length;
-      // The token must be unchanged AND the caret still at its end — otherwise
-      // the user kept typing and this suggestion is stale.
+
       if (caret !== end || val.slice(current.tokenStart, end) !== current.token) {
         hideBar(); return false;
       }
@@ -173,16 +155,14 @@
 
     nativeSetValue(el, newVal);
     try { el.setSelectionRange(newCaret, newCaret); } catch (e) {}
-    // Tell content.js / autocorrect.js a whole word was completed (no keystrokes
-    // fired for it), so counters and the next-word model stay correct.
+
     document.dispatchEvent(new CustomEvent("tl-accept", { detail: { word: word } }));
     hideBar();
     return true;
   }
 
-  // ---- events (trusted user input only) ----------------------------------
   document.addEventListener("input", function (e) {
-    if (!e.isTrusted) return;              // ignore page-synthesized input
+    if (!e.isTrusted) return;
     if (!isTextInput(e.target)) return;
     if (debounceTimer) clearTimeout(debounceTimer);
     var el = e.target;
@@ -193,7 +173,7 @@
     if (!host || host.style.display === "none" || !current.suggestions.length) return;
     if (e.key === "Escape") { hideBar(); return; }
     if (e.key === "Tab" && e.isTrusted) {
-      // Only swallow Tab if we actually accept; otherwise let it navigate.
+
       if (accept(current.suggestions[0])) e.preventDefault();
     } else if (e.key === "ArrowLeft" || e.key === "ArrowRight" ||
                e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "Home" || e.key === "End") {

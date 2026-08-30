@@ -1,18 +1,3 @@
-/*
- * background.js — service worker / aggregation layer.
- *
- * Receives raw stat deltas from content scripts and folds them into
- * browser.storage.local, bucketed by day (and by site within each day).
- * Stores only additive counters; WPM/accuracy are derived at read time.
- * Also hosts the personal next-word model and the misspelled-word memory.
- *
- * All storage read-modify-write operations run through a single serialized
- * queue (writeChain) so concurrent messages — e.g. every frame flushing on
- * pagehide — can't clobber each other's updates.
- */
-
-// In Chrome's service worker `browser`/`TLCorrector` are undefined until we
-// import them; in Firefox the background `scripts` array already loaded both.
 if (typeof importScripts === "function") {
   if (typeof browser === "undefined") importScripts("../lib/browser-polyfill.min.js");
   if (typeof TLCorrector === "undefined") importScripts("./corrector.js");
@@ -22,10 +7,10 @@ const COUNTERS = [
   "typedChars", "backspaces", "words", "cleanWords", "activeMs",
   "wordsChecked", "misspelledWords", "autoCorrections"
 ];
-const MAX_DAYS = 730;             // keep ~2 years of daily history
-const MAX_BIGRAM_KEYS = 8000;     // cap the personal next-word model
+const MAX_DAYS = 730;
+const MAX_BIGRAM_KEYS = 8000;
 const MAX_NEXTS_PER_WORD = 12;
-const MAX_MISSPELLINGS = 500;     // cap the misspelled-word memory
+const MAX_MISSPELLINGS = 500;
 
 function emptyCounters() {
   const o = {};
@@ -44,18 +29,17 @@ function dateKey(ms) {
   return `${y}-${m}-${day}`;
 }
 
-// ---- serialized storage mutations -----------------------------------------
 let writeChain = Promise.resolve();
 function serialize(fn) {
   const run = writeChain.then(fn, fn);
-  writeChain = run.then(() => {}, () => {}); // never let a rejection break the chain
+  writeChain = run.then(() => {}, () => {});
   return run;
 }
 
 function pruneDaily(daily) {
   const keys = Object.keys(daily);
   if (keys.length <= MAX_DAYS) return daily;
-  keys.sort(); // ISO dates sort chronologically
+  keys.sort();
   for (let i = 0; i < keys.length - MAX_DAYS; i++) delete daily[keys[i]];
   return daily;
 }
@@ -82,7 +66,6 @@ function recordDelta(site, delta) {
   });
 }
 
-// ---- personal next-word model (bigrams) -----------------------------------
 let bigramCache = null;
 let bigramSaveTimer = null;
 
@@ -116,7 +99,7 @@ function learnPairs(pairs) {
         bg[prev] = trimmed;
       }
     }
-    // Bound the total number of learned words (drops arbitrary overflow keys).
+
     const allKeys = Object.keys(bg);
     if (allKeys.length > MAX_BIGRAM_KEYS) {
       for (let i = 0; i < allKeys.length - MAX_BIGRAM_KEYS; i++) delete bg[allKeys[i]];
@@ -132,7 +115,6 @@ async function getNextWords(prev, limit) {
   return Object.keys(set).sort((a, b) => set[b] - set[a]).slice(0, limit || 3);
 }
 
-// ---- misspelled-word memory -----------------------------------------------
 function recordMisspelling(correct, typo) {
   return serialize(async () => {
     const s = await browser.storage.local.get(["misspellings"]);
@@ -142,7 +124,6 @@ function recordMisspelling(correct, typo) {
     m[correct].lastSeen = Date.now();
     if (typo) m[correct].typos[typo] = (m[correct].typos[typo] || 0) + 1;
 
-    // Cap: keep the most-misspelled words if we exceed the limit.
     const keys = Object.keys(m);
     if (keys.length > MAX_MISSPELLINGS) {
       keys.sort((a, b) => m[b].count - m[a].count);
@@ -155,10 +136,9 @@ function recordMisspelling(correct, typo) {
   });
 }
 
-// ---- message routing ------------------------------------------------------
 browser.runtime.onMessage.addListener((msg) => {
   if (msg && msg.type === "tl-correct" && typeof msg.word === "string") {
-    return TLCorrector.correct(msg.word);        // pure, write-free
+    return TLCorrector.correct(msg.word);
   }
   if (msg && msg.type === "tl-complete" && typeof msg.prefix === "string") {
     return TLCorrector.complete(msg.prefix, msg.limit || 3);
@@ -181,5 +161,5 @@ browser.runtime.onMessage.addListener((msg) => {
       daily: {}, lifetime: emptyCounters(), bigrams: {}, misspellings: {}, firstSeen: Date.now()
     })).then(() => ({ ok: true }));
   }
-  // Not ours — return nothing so other handlers can respond.
+
 });

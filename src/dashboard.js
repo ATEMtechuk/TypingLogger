@@ -1,8 +1,3 @@
-/*
- * dashboard.js — reads stored daily rollups and draws the graphs.
- * Uses a tiny hand-rolled canvas line-chart renderer so the extension has
- * zero external dependencies (Chrome blocks remote scripts anyway).
- */
 (function () {
   "use strict";
   var M = self.TLMetrics;
@@ -17,17 +12,15 @@
   function fmt(n) { return Math.round(n).toLocaleString(); }
 
   function sortedDays(daily) {
-    return Object.keys(daily).sort(); // ISO date strings sort chronologically
+    return Object.keys(daily).sort();
   }
 
-  // ---- Minimal responsive line chart -----------------------------------
-  var CHART_H = 220; // fixed logical height (never read back from the canvas)
+  var CHART_H = 220;
 
   function drawLineChart(canvas, labels, values, color, opts) {
     opts = opts || {};
     var dpr = window.devicePixelRatio || 1;
-    // Logical CSS size, pinned explicitly so the backing-store scaling can't
-    // compound across resizes on HiDPI displays.
+
     var cssW = canvas.clientWidth || 800;
     var cssH = CHART_H;
     canvas.style.height = cssH + "px";
@@ -45,7 +38,6 @@
     var minV = opts.min != null ? opts.min : 0;
     if (maxV === minV) maxV = minV + 1;
 
-    // Y gridlines + labels (4 steps)
     ctx.font = "10px -apple-system, Segoe UI, sans-serif";
     ctx.fillStyle = COLORS.text;
     ctx.strokeStyle = COLORS.grid;
@@ -70,7 +62,6 @@
       return padT + plotH - plotH * ((v - minV) / (maxV - minV));
     }
 
-    // Area fill
     ctx.beginPath();
     ctx.moveTo(xAt(0), yAt(values[0]));
     for (var j = 1; j < values.length; j++) ctx.lineTo(xAt(j), yAt(values[j]));
@@ -80,7 +71,6 @@
     ctx.fillStyle = hexA(color, 0.12);
     ctx.fill();
 
-    // Line
     ctx.beginPath();
     ctx.moveTo(xAt(0), yAt(values[0]));
     for (var k = 1; k < values.length; k++) ctx.lineTo(xAt(k), yAt(values[k]));
@@ -88,7 +78,6 @@
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Points
     ctx.fillStyle = color;
     for (var p = 0; p < values.length; p++) {
       ctx.beginPath();
@@ -96,13 +85,12 @@
       ctx.fill();
     }
 
-    // X labels: first, middle, last (avoid clutter)
     ctx.fillStyle = COLORS.text;
     var idxs = values.length <= 3
       ? values.map(function (_, ix) { return ix; })
       : [0, Math.floor((values.length - 1) / 2), values.length - 1];
     idxs.forEach(function (ix) {
-      var lbl = (labels[ix] || "").slice(5); // MM-DD
+      var lbl = (labels[ix] || "").slice(5);
       ctx.fillText(lbl, xAt(ix) - 12, padT + plotH + 16);
     });
   }
@@ -112,13 +100,11 @@
     return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + a + ")";
   }
 
-  // ---- Render ------------------------------------------------------------
   function render(store) {
     var daily = store.daily || {};
     var life = store.lifetime || {};
     var days = sortedDays(daily);
 
-    // Summary tiles
     document.getElementById("t-wpm").textContent = fmt(M.computeWPM(life.typedChars || 0, life.activeMs || 0));
     document.getElementById("t-acc").textContent =
       fmt(M.computeSpellingAccuracy(life.wordsChecked || 0, life.misspelledWords || 0)) + "%";
@@ -131,14 +117,12 @@
         " · " + fmt(life.autoCorrections || 0) + " autocorrections";
     }
 
-    // Per-day series
     var wpmSeries = days.map(function (d) { return M.computeWPM(daily[d].typedChars || 0, daily[d].activeMs || 0); });
     var accSeries = days.map(function (d) { return M.computeSpellingAccuracy(daily[d].wordsChecked || 0, daily[d].misspelledWords || 0); });
 
     drawLineChart(document.getElementById("chart-wpm"), days, wpmSeries, COLORS.accent, {});
     drawLineChart(document.getElementById("chart-acc"), days, accSeries, COLORS.good, { min: 0, max: 100 });
 
-    // Per-site table (aggregate across all days)
     var siteCounters = ["typedChars", "backspaces", "words", "activeMs", "wordsChecked", "misspelledWords"];
     var sites = {};
     days.forEach(function (d) {
@@ -172,8 +156,6 @@
     }
   }
 
-  // Build cells with textContent so untrusted site hostnames can never inject
-  // markup (also keeps the linter happy — no innerHTML).
   function appendCell(tr, text, numeric) {
     var td = document.createElement("td");
     if (numeric) td.className = "n";
@@ -181,7 +163,6 @@
     tr.appendChild(td);
   }
 
-  // ---- "Words you often misspell" + on-demand definitions ---------------
   function topTypo(typos) {
     var best = null, bestC = -1;
     Object.keys(typos || {}).forEach(function (t) {
@@ -212,7 +193,7 @@
       appendCell(tr, fmt(r.info.count), true);
       var typoTd = document.createElement("td");
       typoTd.className = "typo";
-      typoTd.textContent = topTypo(r.info.typos) || "—";
+      typoTd.textContent = topTypo(r.info.typos) || "-";
       tr.appendChild(typoTd);
 
       var btnTd = document.createElement("td");
@@ -292,8 +273,6 @@
 
   loadAll();
 
-  // On resize, redraw only the charts/tiles (debounced) so any open definition
-  // rows in the misspellings table are preserved.
   var resizeTimer = null;
   window.addEventListener("resize", function () {
     if (resizeTimer) clearTimeout(resizeTimer);

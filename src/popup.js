@@ -1,4 +1,3 @@
-/* popup.js — renders today's totals + lifetime summary. */
 (function () {
   "use strict";
   var M = self.TLMetrics;

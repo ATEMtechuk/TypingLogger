@@ -5,7 +5,7 @@ of its respective authors and is used under the license shown.
 
 ---
 
-## 1. Frequency dictionary — `data/dict.txt`
+## 1. Frequency dictionary - `data/dict.txt`
 
 Derived from **`frequency_dictionary_en_82_765.txt`** in the **SymSpell** project
 (<https://github.com/wolfgarbe/SymSpell>), Copyright © Wolf Garbe, used under the
@@ -38,7 +38,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
 
 ---
 
-## 2. WebExtension polyfill — `lib/browser-polyfill.min.js`
+## 2. WebExtension polyfill - `lib/browser-polyfill.min.js`
 
 **webextension-polyfill** v0.12.0
 (<https://github.com/mozilla/webextension-polyfill>), Copyright © Mozilla, used
